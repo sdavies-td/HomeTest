@@ -1,0 +1,72 @@
+﻿@page "/edit-product"
+@page "/edit-product/{id:int}"
+@inject IProductService ProductService
+@rendermode InteractiveAuto
+
+@if (Id == null)
+{
+    <h3>Create Product</h3>
+}
+else
+{
+    <h3>Edit @product.Name</h3>
+}
+
+<div class="form-container">
+    <EditForm Model="product" OnSubmit="HandleSubmit">
+        <div class="form-group">
+            <label for="productName">Name</label>
+            <InputText id="productName" class="form-control" @bind-Value="product.Name" />
+        </div>
+
+        <div class="form-group">
+            <label for="productDescription">Description</label>
+            <InputText id="productDescription" class="form-control" @bind-Value="product.Description" />
+        </div>
+
+        <div class="form-group">
+            <label for="productPrice">Price</label>
+            <InputNumber id="productPrice" class="form-control" @bind-Value="product.Price" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+        @if (Id != null)
+        {
+            <button @onclick="DeleteProduct" type="button" class="btn btn-danger">Delete</button>
+        }
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    Product product { get; set; } = new Product { Name = string.Empty, Description = string.Empty, Price = decimal.Zero };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            product = await ProductService.GetProductById((int)Id);
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (Id == null)
+        {
+            await ProductService.AddProduct(product);
+        }
+        else
+        {
+            await ProductService.EditProduct((int)Id, product);
+        }
+    }
+
+    async Task DeleteProduct()
+    {
+        if (Id != null)
+        {
+            await ProductService.DeleteProduct((int)Id);
+        }
+    }
+}
